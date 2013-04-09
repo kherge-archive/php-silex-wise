@@ -1,6 +1,6 @@
 {
     "name": "herrera-io/silex-wise",
-    "description": "A Silex service provier for Wise.",
+    "description": "A Silex service provider for Wise.",
     "keywords": ["silex", "config"],
     "homepage": "http://github.com/herrera-io/php-silex-wise",
     "license": "MIT",
