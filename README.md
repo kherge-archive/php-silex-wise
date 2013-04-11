@@ -31,6 +31,9 @@ $app->register(
     array(
         'wise.path' => '/path/to/config/dir',     // or an array of paths
         'wise.cache_dir' => '/path/to/cache/dir', // optional
+        'wise.options' => array(
+            'parameters' => array(...)            // global parameters
+        )
     )
 );
 
@@ -60,6 +63,7 @@ The service provider registers the following services:
 and the following parameters:
 
 - `$app['wise.cache_dir']` - The cache directory path.
+- `$app['wise.options']` - The optional Wise settings.
 - `$app['wise.path']` - The configuration directory path.
 
 All of the above can be customized to better suit your needs.
