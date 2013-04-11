@@ -20,11 +20,22 @@ class WiseServiceProviderTest extends TestCase
 
     public function testRegister()
     {
-        $this->app->register($this->provider);
-        $this->app->boot();
+        $this->app->register(
+            $this->provider,
+            array(
+                'wise.cache_dir' => $this->createDir(),
+                'wise.options' => array(
+                    'parameters' => array(
+                        'global' => array(
+                            'value' => 456
+                        )
+                    )
+                ),
+                'wise.path' => $this->createDir(),
+            )
+        );
 
-        $this->app['wise.cache_dir'] = $this->createDir();
-        $this->app['wise.path'] = $this->createDir();
+        $this->app->boot();
 
         file_put_contents(
             $this->app['wise.path'] . '/test.ini',
@@ -34,6 +45,7 @@ class WiseServiceProviderTest extends TestCase
 
 [ini]
 test = 123
+global = "%global.value%"
 CONTENTS
         );
 
@@ -96,7 +108,7 @@ CONTENTS
                 'imports' => array(
                     array('resource' => 'test.yml')
                 ),
-                'ini' => array('test' => '123'),
+                'ini' => array('test' => '123', 'global' => '456'),
                 'php' => array('test' => 456),
                 'json' => array('test' => 789),
                 'xml' => array('test' =>  987),

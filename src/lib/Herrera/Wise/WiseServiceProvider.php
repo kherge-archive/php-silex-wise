@@ -2,6 +2,7 @@
 
 namespace Herrera\Wise;
 
+use Herrera\Wise\WiseAwareInterface;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Symfony\Component\Config\FileLocator;
@@ -30,13 +31,18 @@ class WiseServiceProvider implements ServiceProviderInterface
         $app['wise'] = $app->share(
             function () use ($app) {
                 $wise = new Wise($app['debug']);
+                $app['__wise'] = $wise;
+
                 $wise->setLoader($app['wise.loader']);
                 $wise->setCollector($app['wise.collector']);
+                $wise->setGlobalParameters($app['wise.options']['parameters']);
                 $wise->setProcessor($app['wise.processor']);
 
                 if (isset($app['wise.cache_dir'])) {
                     $wise->setCacheDir($app['wise.cache_dir']);
                 }
+
+                unset($app['__wise']);
 
                 return $wise;
             }
@@ -83,6 +89,12 @@ class WiseServiceProvider implements ServiceProviderInterface
                     );
                 }
 
+                foreach ($loaders as $loader) {
+                    if ($loader instanceof WiseAwareInterface) {
+                        $loader->setWise($app['__wise']);
+                    }
+                }
+
                 return $loaders;
             }
         );
@@ -91,6 +103,10 @@ class WiseServiceProvider implements ServiceProviderInterface
             function () use ($app) {
                 return new FileLocator($app['wise.path']);
             }
+        );
+
+        $app['wise.options'] = array(
+            'parameters' => array()
         );
 
         $app['wise.processor'] = $app->share(
