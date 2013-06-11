@@ -28,9 +28,9 @@ By default, every supported file loader will be registered:
 
 - INI
 - PHP
-- JSON (if the Herrera\Json library is installed)
-- XML (if the DOMDocument class is available)
-- YAML (if the Symfony\Component\Yaml library is installed)
+- JSON (if the `Herrera\Json` library is installed)
+- XML (if the `DOMDocument` class is available)
+- YAML (if the `Symfony\Component\Yaml` library is installed)
 
 You may specify your own list of loaders by replacing the `$app['wise.loaders']`
 array value. This list of loaders will be automatically registered with Wise
