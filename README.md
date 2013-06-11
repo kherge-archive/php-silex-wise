@@ -4,8 +4,7 @@ Wise for Silex
 [![Build Status]](http://travis-ci.org/herrera-io/php-wise)
 
 Wise for Silex integrates the [Wise][] configuration loader with a [Silex][]
-application. It also provides other services providers to better manage your
-Silex application through configuration files.
+application.
 
 ```php
 $app = new Silex\Application();
