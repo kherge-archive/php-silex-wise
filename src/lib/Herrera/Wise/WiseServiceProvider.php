@@ -2,12 +2,12 @@
 
 namespace Herrera\Wise;
 
+use Herrera\Wise\Loader\LoaderResolver;
 use Herrera\Wise\WiseAwareInterface;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\DelegatingLoader;
-use Symfony\Component\Config\Loader\LoaderResolver;
 
 /**
  * Registers Wise as a service.
@@ -19,9 +19,11 @@ class WiseServiceProvider implements ServiceProviderInterface
     /**
      * {@inheritDoc}
      */
+    // @codeCoverageIgnoreStart
     public function boot(Application $app)
     {
     }
+    // @codeCoverageIgnoreEnd
 
     /**
      * {@inheritDoc}
@@ -31,7 +33,6 @@ class WiseServiceProvider implements ServiceProviderInterface
         $app['wise'] = $app->share(
             function () use ($app) {
                 $wise = new Wise($app['debug']);
-                $app['__wise'] = $wise;
 
                 $wise->setLoader($app['wise.loader']);
                 $wise->setCollector($app['wise.collector']);
@@ -41,8 +42,6 @@ class WiseServiceProvider implements ServiceProviderInterface
                 if (isset($app['wise.cache_dir'])) {
                     $wise->setCacheDir($app['wise.cache_dir']);
                 }
-
-                unset($app['__wise']);
 
                 return $wise;
             }
@@ -87,12 +86,6 @@ class WiseServiceProvider implements ServiceProviderInterface
                     $loaders[] = new Loader\YamlFileLoader(
                         $app['wise.locator']
                     );
-                }
-
-                foreach ($loaders as $loader) {
-                    if ($loader instanceof WiseAwareInterface) {
-                        $loader->setWise($app['__wise']);
-                    }
                 }
 
                 return $loaders;
