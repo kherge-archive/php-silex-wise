@@ -253,7 +253,7 @@ class WiseServiceProviderTest extends TestCase
     public function testRegisterServices()
     {
         file_put_contents(
-            'config_test.json',
+            'services_test.json',
             json_encode(
                 array(
                     'test_1' => array(
@@ -280,7 +280,7 @@ class WiseServiceProviderTest extends TestCase
     public function testRegisterServicesNoClass()
     {
         file_put_contents(
-            'config.json',
+            'services.json',
             json_encode(
                 array(
                     'invalid_service' => array()

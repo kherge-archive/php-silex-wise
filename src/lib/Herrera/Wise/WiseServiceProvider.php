@@ -130,7 +130,7 @@ class WiseServiceProvider implements ServiceProviderInterface
             array(
                 'config' => array(
                     'routes' => 'routes',
-                    'services' => 'config',
+                    'services' => 'services',
                 ),
                 'mode' => $app['debug'] ? 'dev' : 'prod',
                 'type' => 'json',
