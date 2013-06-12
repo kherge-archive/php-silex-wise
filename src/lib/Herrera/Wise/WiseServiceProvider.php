@@ -2,6 +2,8 @@
 
 namespace Herrera\Wise;
 
+use ArrayObject;
+use Herrera\Wise\Exception\InvalidArgumentException;
 use Herrera\Wise\Loader\LoaderResolver;
 use Herrera\Wise\Silex\Loader;
 use Herrera\Wise\Silex\SilexAwareInterface;
@@ -106,8 +108,16 @@ class WiseServiceProvider implements ServiceProviderInterface
             }
         );
 
-        $app['wise.options'] = array(
-            'parameters' => array()
+        $app['wise.options'] = new \ArrayObject(
+            array(
+                'config' => array(
+                    'routes' => 'routes',
+                    'services' => 'config',
+                ),
+                'mode' => $app['debug'] ? 'dev' : 'prod',
+                'type' => 'json',
+                'parameters' => array()
+            )
         );
 
         $app['wise.processor'] = $app->share(
@@ -125,5 +135,42 @@ class WiseServiceProvider implements ServiceProviderInterface
         );
 
         $app['wise.processors'] = array();
+    }
+
+    /**
+     * Registers the configured services.
+     *
+     * @param Application $app The application.
+     *
+     * @throws InvalidArgumentException If a service definition is invalid.
+     */
+    public static function registerServices(Application $app)
+    {
+        $file = $app['wise.options']['config']['services'];
+
+        if ('prod' !== $app['wise.options']['mode']) {
+            $file .= '_' . $app['wise.options']['mode'];
+        }
+
+        $file .= '.' . $app['wise.options']['type'];
+
+        /** @var $wise Wise */
+        $wise = $app['wise'];
+        $services = $wise->load($file);
+
+        foreach ($services as $name => $service) {
+            if (!isset($service['class'])) {
+                throw InvalidArgumentException::format(
+                    'The service "%s" did not specify its "class".',
+                    $name
+                );
+            }
+
+            if (!isset($service['parameters'])) {
+                $service['parameters'] = array();
+            }
+
+            $app->register(new $service['class'](), $service['parameters']);
+        }
     }
 }

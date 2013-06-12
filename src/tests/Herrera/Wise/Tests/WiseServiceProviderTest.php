@@ -177,6 +177,52 @@ class WiseServiceProviderTest extends TestCase
         $this->assertSame(array(), $this->app['wise.processors']);
     }
 
+    public function testRegisterServices()
+    {
+        file_put_contents(
+            'config_test.json',
+            json_encode(
+                array(
+                    'test_1' => array(
+                        'class' => 'Herrera\\Wise\\Test\\Service',
+                        'parameters' => array(
+                            'test.parameter' => 123
+                        )
+                    ),
+                    'test_2' => array(
+                        'class' => 'Herrera\\Wise\\Test\\Service'
+                    )
+                )
+            )
+        );
+
+        $this->app['wise.options']['mode'] = 'test';
+
+        WiseServiceProvider::registerServices($this->app);
+
+        $this->assertSame(2, $this->app['test.service']);
+        $this->assertSame(123, $this->app['test.parameter']);
+    }
+
+    public function testRegisterServicesNoClass()
+    {
+        file_put_contents(
+            'config.json',
+            json_encode(
+                array(
+                    'invalid_service' => array()
+                )
+            )
+        );
+
+        $this->setExpectedException(
+            'Herrera\\Wise\\Exception\\InvalidArgumentException',
+            'The service "invalid_service" did not specify its "class".'
+        );
+
+        WiseServiceProvider::registerServices($this->app);
+    }
+
     protected function setUp()
     {
         $this->app = new Application();
