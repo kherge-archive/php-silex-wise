@@ -8,6 +8,7 @@ use Herrera\Wise\Loader;
 use Herrera\Wise\Test\Processor;
 use Herrera\Wise\WiseServiceProvider;
 use Silex\Application;
+use Symfony\Component\HttpFoundation\Request;
 
 class WiseServiceProviderTest extends TestCase
 {
@@ -175,6 +176,78 @@ class WiseServiceProviderTest extends TestCase
     public function testRegisterProcessors()
     {
         $this->assertSame(array(), $this->app['wise.processors']);
+    }
+
+    public function testRegisterRoutes()
+    {
+        file_put_contents(
+            'routes_test.json',
+            json_encode(
+                array(
+                    'test' => array(
+                        'pattern' => '/test/{id}',
+                        'defaults' => array(
+                            '_controller' => 'Herrera\\Wise\\Test\\Controller::action'
+                        )
+                    )
+                )
+            )
+        );
+
+        $this->app['wise.options']['mode'] = 'test';
+
+        WiseServiceProvider::registerRoutes($this->app);
+
+        $this->app->boot();
+
+        $request = Request::create('/test/123');
+        $response = $this->app->handle($request);
+
+        $this->assertEquals('Action ran.', $response->getContent());
+    }
+
+    public function testRegisterRoutesPathAndPattern()
+    {
+        file_put_contents(
+            'routes.json',
+            json_encode(
+                array(
+                    'invalid_route' => array(
+                        'path' => '/test',
+                        'pattern' => '/test/{id}'
+                    )
+                )
+            )
+        );
+
+        $this->setExpectedException(
+            'Herrera\\Wise\\Exception\\InvalidArgumentException',
+            'The "invalid_route" route must not specify both "path" and "pattern".'
+        );
+
+        WiseServiceProvider::registerRoutes($this->app);
+    }
+
+    public function testRegisterRoutesUnsupportedKeys()
+    {
+        file_put_contents(
+            'routes.json',
+            json_encode(
+                array(
+                    'unsupported_route' => array(
+                        'alpha' => 123,
+                        'beta' => 123
+                    )
+                )
+            )
+        );
+
+        $this->setExpectedException(
+            'Herrera\\Wise\\Exception\\InvalidArgumentException',
+            'The "unsupported_route" route used unsupported keys (alpha, beta). Expected:'
+        );
+
+        WiseServiceProvider::registerRoutes($this->app);
     }
 
     public function testRegisterServices()

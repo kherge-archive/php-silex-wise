@@ -11,6 +11,8 @@ use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\DelegatingLoader;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Registers Wise as a service.
@@ -19,6 +21,22 @@ use Symfony\Component\Config\Loader\DelegatingLoader;
  */
 class WiseServiceProvider implements ServiceProviderInterface
 {
+    /**
+     * The supported route keys and default values.
+     *
+     * @var array
+     */
+    private static $supportedKeys = array(
+        'defaults' => array(),
+        'host' => '',
+        'methods' => array(),
+        'options' => array(),
+        'path' => null,
+        'pattern' => null,
+        'requirements' => array(),
+        'schemes' => array(),
+    );
+
     /**
      * {@inheritDoc}
      */
@@ -135,6 +153,79 @@ class WiseServiceProvider implements ServiceProviderInterface
         );
 
         $app['wise.processors'] = array();
+    }
+
+    /**
+     * Registers the configured routes.
+     *
+     * @param Application $app The application.
+     *
+     * @throws InvalidArgumentException If a route definition is invalid.
+     */
+    public static function registerRoutes(Application $app)
+    {
+        $file = $app['wise.options']['config']['routes'];
+
+        if ('prod' !== $app['wise.options']['mode']) {
+            $file .= '_' . $app['wise.options']['mode'];
+        }
+
+        $file .= '.' . $app['wise.options']['type'];
+
+        /** @var $wise Wise */
+        $wise = $app['wise'];
+        $routes = $wise->load($file);
+        $collection = new RouteCollection();
+
+        foreach ($routes as $name => $route) {
+            if (isset($route['pattern'])) {
+                if (isset($route['path'])) {
+                    throw InvalidArgumentException::format(
+                        'The "%s" route must not specify both "path" and "pattern".',
+                        $name
+                    );
+                }
+
+                $route['path'] = $route['pattern'];
+            }
+
+            $unsupportedKeys = array_diff(
+                array_keys($route),
+                array_keys(self::$supportedKeys)
+            );
+
+            if (!empty($unsupportedKeys)) {
+                throw InvalidArgumentException::format(
+                    'The "%s" route used unsupported keys (%s). Expected: %s',
+                    $name,
+                    join(', ', $unsupportedKeys),
+                    join(', ', array_keys(self::$supportedKeys))
+                );
+            }
+
+            foreach (self::$supportedKeys as $key => $value) {
+                if (!isset($route[$key])) {
+                    $route[$key] = $value;
+                }
+            }
+
+            $collection->add(
+                $name,
+                new Route(
+                    $route['path'],
+                    $route['defaults'],
+                    $route['requirements'],
+                    $route['options'],
+                    $route['host'],
+                    $route['schemes'],
+                    $route['methods']
+                )
+            );
+        }
+
+        /** @var $routes \Symfony\Component\Routing\RouteCollection */
+        $routes = $app['routes'];
+        $routes->addCollection($collection);
     }
 
     /**
