@@ -3,7 +3,8 @@
 namespace Herrera\Wise;
 
 use Herrera\Wise\Loader\LoaderResolver;
-use Herrera\Wise\WiseAwareInterface;
+use Herrera\Wise\Silex\Loader;
+use Herrera\Wise\Silex\SilexAwareInterface;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Symfony\Component\Config\FileLocator;
@@ -22,6 +23,7 @@ class WiseServiceProvider implements ServiceProviderInterface
     // @codeCoverageIgnoreStart
     public function boot(Application $app)
     {
+        // do nothing
     }
     // @codeCoverageIgnoreEnd
 
@@ -86,6 +88,12 @@ class WiseServiceProvider implements ServiceProviderInterface
                     $loaders[] = new Loader\YamlFileLoader(
                         $app['wise.locator']
                     );
+                }
+
+                foreach ($loaders as $loader) {
+                    if ($loader instanceof SilexAwareInterface) {
+                        $loader->setSilex($app);
+                    }
                 }
 
                 return $loaders;
