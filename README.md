@@ -31,4 +31,4 @@ Documentation
 [Installing]: doc/00-Installing.md
 [Usage]: doc/01-Usage.md
 [Services]: doc/02-Services.md
-[Services]: doc/03-Routes.md
+[Routes]: doc/03-Routes.md
