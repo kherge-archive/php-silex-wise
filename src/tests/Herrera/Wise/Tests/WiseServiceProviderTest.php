@@ -256,11 +256,14 @@ class WiseServiceProviderTest extends TestCase
             'services_test.json',
             json_encode(
                 array(
+                    'parameters' => array(
+                        'test_parameter' => 123,
+                    ),
                     'test_1' => array(
                         'class' => 'Herrera\\Wise\\Test\\Service',
                         'parameters' => array(
-                            'test.parameter' => 123
-                        )
+                            'test.parameter' => '%test_parameter%'
+                        ),
                     ),
                     'test_2' => array(
                         'class' => 'Herrera\\Wise\\Test\\Service'
@@ -269,12 +272,16 @@ class WiseServiceProviderTest extends TestCase
             )
         );
 
+        /** @var $wise \Herrera\Wise\Wise */
+        $wise = $this->app['wise'];
+        $wise->setGlobalParameters($this->app);
+
         $this->app['wise.options']['mode'] = 'test';
 
         WiseServiceProvider::registerServices($this->app);
 
         $this->assertSame(2, $this->app['test.service']);
-        $this->assertSame(123, $this->app['test.parameter']);
+        $this->assertEquals(123, $this->app['test.parameter']);
     }
 
     public function testRegisterServicesNoClass()
