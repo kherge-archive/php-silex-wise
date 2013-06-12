@@ -177,6 +177,9 @@ class WiseServiceProvider implements ServiceProviderInterface
         $routes = $wise->load($file);
         $collection = new RouteCollection();
 
+        unset($routes['parameters']);
+        unset($routes['imports']);
+
         foreach ($routes as $name => $route) {
             if (isset($route['pattern'])) {
                 if (isset($route['path'])) {
@@ -250,6 +253,7 @@ class WiseServiceProvider implements ServiceProviderInterface
         $services = $wise->load($file);
 
         unset($services['parameters']);
+        unset($services['imports']);
 
         foreach ($services as $name => $service) {
             if (!isset($service['class'])) {
