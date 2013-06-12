@@ -249,6 +249,8 @@ class WiseServiceProvider implements ServiceProviderInterface
         $wise = $app['wise'];
         $services = $wise->load($file);
 
+        unset($services['parameters']);
+
         foreach ($services as $name => $service) {
             if (!isset($service['class'])) {
                 throw InvalidArgumentException::format(
