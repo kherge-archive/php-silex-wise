@@ -5,7 +5,7 @@ namespace Herrera\Wise\Tests;
 use ArrayObject;
 use Herrera\PHPUnit\TestCase;
 use Herrera\Wise\Loader;
-use Herrera\Wise\Processor\AbstractProcessor;
+use Herrera\Wise\Test\Processor;
 use Herrera\Wise\WiseServiceProvider;
 use Silex\Application;
 
@@ -157,7 +157,7 @@ class WiseServiceProviderTest extends TestCase
 
     public function testRegisterProcessorResolver()
     {
-        $this->app['wise.processors'] = array(new TestProcessor());
+        $this->app['wise.processors'] = array(new Processor());
 
         /** @var $resolver \Herrera\Wise\Processor\ProcessorResolver */
         $resolver = $this->app['wise.processor_resolver'];
@@ -198,16 +198,5 @@ class WiseServiceProviderTest extends TestCase
         chdir($this->cwd);
 
         parent::tearDown();
-    }
-}
-
-class TestProcessor extends AbstractProcessor
-{
-    public function getConfigTreeBuilder()
-    {
-    }
-
-    public function supports($resource, $type = null)
-    {
     }
 }
