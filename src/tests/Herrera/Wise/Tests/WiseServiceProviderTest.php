@@ -9,6 +9,7 @@ use Herrera\Wise\Test\Processor;
 use Herrera\Wise\WiseServiceProvider;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class WiseServiceProviderTest extends TestCase
 {
@@ -143,7 +144,7 @@ class WiseServiceProviderTest extends TestCase
 
     public function testRegisterProcessor()
     {
-        /** @var \Herrera\Wise\Processor\DelegatingProcessor */
+        /** @var \Herrera\Wise\Processor\DelegatingProcessor $processor */
         $processor = $this->app['wise.processor'];
 
         $this->assertInstanceOf(
@@ -201,6 +202,7 @@ class WiseServiceProviderTest extends TestCase
         $this->app->boot();
 
         $request = Request::create('/test/123');
+        /** @var Response $response */
         $response = $this->app->handle($request);
 
         $this->assertEquals('Action ran.', $response->getContent());
