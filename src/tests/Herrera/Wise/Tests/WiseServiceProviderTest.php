@@ -230,6 +230,52 @@ class WiseServiceProviderTest extends TestCase
         WiseServiceProvider::registerRoutes($this->app);
     }
 
+    public function testRegisterRoutesNull()
+    {
+        file_put_contents(
+            'routes.json',
+            json_encode(
+                array(
+                    'test' => array(
+                        'pattern' => '/test/{id}',
+                        'defaults' => array(
+                            '_controller' => 'Herrera\\Wise\\Test\\Controller::action'
+                        )
+                    )
+                )
+            )
+        );
+
+        file_put_contents(
+            'routes_test.json',
+            json_encode(
+                array(
+                    'imports' => array(
+                        array(
+                            'resource' => 'routes.json'
+                        )
+                    ),
+                    'test' => null
+                )
+            )
+        );
+
+        $this->app['wise.options']['mode'] = 'test';
+
+        WiseServiceProvider::registerRoutes($this->app);
+
+        $this->app->boot();
+
+        $request = Request::create('/test/123');
+        /** @var Response $response */
+        $response = $this->app->handle($request);
+
+        $this->assertRegExp(
+            '/could not be found/',
+            $response->getContent()
+        );
+    }
+
     public function testRegisterRoutesUnsupportedKeys()
     {
         file_put_contents(
@@ -303,6 +349,54 @@ class WiseServiceProviderTest extends TestCase
         );
 
         WiseServiceProvider::registerServices($this->app);
+    }
+
+    public function testRegisterServicesNull()
+    {
+        file_put_contents(
+            'services.json',
+            json_encode(
+                array(
+                    'parameters' => array(
+                        'test_parameter' => 123,
+                    ),
+                    'test_1' => array(
+                        'class' => 'Herrera\\Wise\\Test\\Service',
+                        'parameters' => array(
+                            'test.parameter' => '%test_parameter%'
+                        ),
+                    ),
+                    'test_2' => array(
+                        'class' => 'Herrera\\Wise\\Test\\Service'
+                    )
+                )
+            )
+        );
+
+        file_put_contents(
+            'services_test.json',
+            json_encode(
+                array(
+                    'imports' => array(
+                        array(
+                            'resource' => 'services.json'
+                        )
+                    ),
+                    'test_1' => null
+                )
+            )
+        );
+
+        /** @var $wise \Herrera\Wise\Wise */
+        $wise = $this->app['wise'];
+        $wise->setGlobalParameters($this->app);
+
+        $this->app['wise.options']['mode'] = 'test';
+
+        WiseServiceProvider::registerServices($this->app);
+
+        $this->assertSame(1, $this->app['test.service']);
+        $this->assertFalse(isset($this->app['test.parameter']));
     }
 
     protected function setUp()

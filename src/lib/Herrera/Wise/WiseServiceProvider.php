@@ -181,6 +181,10 @@ class WiseServiceProvider implements ServiceProviderInterface
         unset($routes['imports']);
 
         foreach ($routes as $name => $route) {
+            if (null === $route) {
+                continue;
+            }
+
             if (isset($route['pattern'])) {
                 if (isset($route['path'])) {
                     throw InvalidArgumentException::format(
@@ -256,6 +260,10 @@ class WiseServiceProvider implements ServiceProviderInterface
         unset($services['imports']);
 
         foreach ($services as $name => $service) {
+            if (null === $service) {
+                continue;
+            }
+
             if (!isset($service['class'])) {
                 throw InvalidArgumentException::format(
                     'The service "%s" did not specify its "class".',
